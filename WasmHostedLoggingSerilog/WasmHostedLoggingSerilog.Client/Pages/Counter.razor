@@ -1,0 +1,57 @@
+﻿@page "/counter"
+@* Prerendering issue *@
+@* Source: https://github.com/dotnet/AspNetCore.Docs/issues/31267#issuecomment-1862785544 *@
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject ILogger<Counter> Logger
+@inject HttpClient HttpClient
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@if (_hellos is null)
+{
+    <p>Loading...</p>
+}
+else if (!_hellos.Any())
+{
+    <p>No hellos.</p>
+}
+else
+{
+    <ul>
+        @foreach (var hello in _hellos)
+        {
+            <li>@hello</li>
+        }
+    </ul>
+}
+
+@code {
+
+    private IList<string>? _hellos;
+
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _hellos = await HttpClient.GetFromJsonAsync<IList<string>>("api/hellos");
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        Logger.LogWarning("This is the Counter component");
+
+        return base.OnParametersSetAsync();
+    }
+
+}
